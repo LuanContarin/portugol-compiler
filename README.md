@@ -1,2 +1,3 @@
 # portugol-compiler
-A portugol compiler made using C++
+
+A portugol compiler made using Python
