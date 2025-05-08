@@ -29,6 +29,8 @@ def main():
 def scan_line(line: str, lineNumber: int) -> str:
   token_matchers: List[Callable[[str, int], Optional[TokenMatch]]] = [
     match_token_string,
+    match_token_atr,
+    match_token_logoperators,
     # ...
   ]
 
@@ -76,6 +78,38 @@ def match_token_string(line: str, startIndex: int, lineNumber: int) -> Optional[
 
   end_index = i + 1
   return TokenMatch(start=startIndex, end=end_index, replacement=TokenEnum.STRING.name)
+
+def match_token_atr(line: str, startIndex: int, lineNumber: int) -> Optional[TokenMatch]:
+  if line[startIndex] != '<':
+    return None  # Not a match
+  
+  next_char = line[startIndex + 1] if startIndex + 1 < len(line) else None
+  if (next_char != '-'):
+    return None  # Not a match
+  
+  return TokenMatch(start=startIndex, end=startIndex + 2, replacement=TokenEnum.ATR.name)
+
+def match_token_logoperators(line: str, startIndex: int, lineNumber: int) -> Optional[TokenMatch]:
+  char = line[startIndex]
+  next_char = line[startIndex + 1] if startIndex + 1 < len(line) else None
+  
+  # Multi-character logical operators
+  if char == '<' and next_char == '>':
+    return TokenMatch(start=startIndex, end=startIndex + 2, replacement=TokenEnum.LOGDIFF.name)
+  if char == '<' and next_char == '=':
+    return TokenMatch(start=startIndex, end=startIndex + 2, replacement=TokenEnum.LOGMENORIGUAL.name)
+  if char == '>' and next_char == '=':
+    return TokenMatch(start=startIndex, end=startIndex + 2, replacement=TokenEnum.LOGMAIORIGUAL.name)
+  
+  # Single-character logical operators
+  if char == '=':
+    return TokenMatch(start=startIndex, end=startIndex + 1, replacement=TokenEnum.LOGIGUAL.name)
+  if char == '<':
+    return TokenMatch(start=startIndex, end=startIndex + 1, replacement=TokenEnum.LOGMENOR.name)
+  if char == '>':
+    return TokenMatch(start=startIndex, end=startIndex + 1, replacement=TokenEnum.LOGMAIOR.name)
+  
+  return None  # Not a match
 
 if __name__ == "__main__":
   main()
