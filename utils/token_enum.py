@@ -1,5 +1,5 @@
 from enum import Enum, auto
 
-class TokenTable(Enum):
+class TokenEnum(Enum):
   STRING = auto(),
   
