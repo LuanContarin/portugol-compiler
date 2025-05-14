@@ -31,3 +31,11 @@ class TokenEnum(Enum):
   SENAO = auto(),
   STRING = auto(),
   TIPO = auto(),
+
+  # Additional Tokens (not in documentation)
+  ALGORITMO = auto(),
+  VAR = auto(),
+  COMMA = auto(),
+  COLON = auto(),
+  INICIO = auto(),
+  FIMALGORITMO = auto(),

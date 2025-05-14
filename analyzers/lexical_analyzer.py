@@ -1,32 +1,38 @@
+import json
+import os
 from typing import Callable, List, Optional
 
-from utils.file_helper import delete_if_exists, read_lines_from_file
+from utils.file_helper import read_lines_from_file
 from utils.token_match import TokenMatch
 from utils.token_enum import TokenEnum
 
-INPUT_FILE_NAME = 'input-2.por'
+OUTPUT_PATH_BASE = 'output/lexic_analyzer'
 
-def main():
-  lines = read_lines_from_file(INPUT_FILE_NAME)
+def compile(fileName):
+  print('(Lexer started)')
 
-  file_name = f'{INPUT_FILE_NAME}_lexic-output.txt'
-  file_path = f'output/{file_name}'
+  os.makedirs(OUTPUT_PATH_BASE, exist_ok=True)
+  lines = read_lines_from_file(fileName)
 
-  try:
-    with open(file_path, 'w') as output_file:
-      # Scan and write each line
-      for i, line in enumerate(lines):
-        print(f'Scanning line [{i+1}]...\t{line}')
-        new_line = scan_line(line, i+1)
-        output_file.write(new_line + '\n')
+  lexeme_pairs = []
+
+  tokens_file_name = f'{fileName}_lexic-replaced.tem'
+  with open(f'{OUTPUT_PATH_BASE}/{tokens_file_name}', 'w', encoding='utf-8') as tokens_file:
+    # Scan and write each line
+    for i, line in enumerate(lines):
+      print(f'Scanning line [{i+1}]...\t{line}')
+      (new_line, token_lexem) = scan_line(line, i+1)
+      tokens_file.write(new_line + '\n')
+      lexeme_pairs.extend(token_lexem)
+
+  pairs_file_name = f'{fileName}_lexic-lexems.tem'
+  with open(f'{OUTPUT_PATH_BASE}/{pairs_file_name}', 'w', encoding='utf-8') as lexeme_file:
+    json.dump(lexeme_pairs, lexeme_file, ensure_ascii=False, indent=2)
     
-    print(f'Output written to {file_path}')
-  except Exception as e:
-    print(f'[COMPILATION ERROR] Lexical analysis failed:\n\t{e}')
-    delete_if_exists(file_path)
-  
+  print(f'Output written to {OUTPUT_PATH_BASE}')
+  print('(Lexer ended)')
 
-def scan_line(line: str, lineNumber: int) -> str:
+def scan_line(line: str, lineNumber: int) -> tuple[str, List[str]]:
   token_matchers: List[Callable[[str, int], Optional[TokenMatch]]] = [
     match_token_string,
     match_token_keywords,
@@ -35,36 +41,49 @@ def scan_line(line: str, lineNumber: int) -> str:
     match_token_mathoperators,
     match_token_parentheses,
     match_token_constnumbers,
+    match_token_separators,
     match_token_identifier,
     # ...
   ]
 
   i = 0
-  new_line = line
+  new_line_parts = []
+  token_lexem = []
 
-  while i < len(new_line):
+  while i < len(line):
+    # Skip spaces
+    if line[i].isspace():
+      new_line_parts.append(' ')
+      i += 1
+      continue
+
     match_found = False
     
     # Run all token matchers
     for matcher in token_matchers:
-      match = matcher(new_line, i, lineNumber)
+      match = matcher(line, i, lineNumber)
       if match:
-        new_line = new_line[:match.start] + " " + match.replacement + " " + new_line[match.end:]
-        i = match.start + len(match.replacement) + 2 # Count spaces separators
+        # Line replacement
+        new_line_parts.append(f' {match.replacement} ')
+
+        # Token-lexeme
+        lexeme = line[match.start:match.end]
+        token_lexem.append({
+          "token": match.replacement,
+          "lexeme": lexeme
+        })
+
+        i = match.end
         match_found = True
         break # Exit after match
 
     if not match_found:
-      # Commented until all token matchers are completed
-      # current_char = new_line[i]
-      # if not current_char.isspace():
-      #   raise Exception(f"Unknown token '{current_char}' at line {lineNumber}:{i}")
+      # Unknown char
+      raise Exception(f'Unknown char "{new_line[i]}" at line {lineNumber}:{i}')
 
-      i += 1
-
-  # Collapse multiple spaces into a single space and trim the line
-  new_line = ' '.join(new_line.split())
-  return new_line
+  # Collapse multiple spaces into single space and trim the line
+  new_line = ' '.join(''.join(new_line_parts).split())
+  return (new_line, token_lexem)
 
 # ------------------------
 # Token Matchers
@@ -81,7 +100,7 @@ def match_token_string(line: str, startIndex: int, lineNumber: int) -> Optional[
 
   # Couldnt find string end
   if i >= len(line):
-    raise Exception(f"Unterminated string starting at line {lineNumber}:{startIndex}")
+    raise Exception(f'Unterminated string starting at line {lineNumber}:{startIndex}')
 
   end_index = i + 1
   return TokenMatch(start=startIndex, end=end_index, replacement=TokenEnum.STRING.name)
@@ -93,20 +112,25 @@ def match_token_keywords(line: str, startIndex: int, lineNumber: int) -> Optiona
     return prev_valid and next_valid
 
   keywords = {
-    "até": TokenEnum.ATE,
-    "e": TokenEnum.E,
-    "então": TokenEnum.ENTAO,
-    "escreva": TokenEnum.ESCREVA,
-    "fim_para": TokenEnum.FIMPARA,
-    "fim_se": TokenEnum.FIMSE,
-    "leia": TokenEnum.LEIA,
-    "não": TokenEnum.NAO,
-    "ou": TokenEnum.OU,
-    "para": TokenEnum.PARA,
-    "passo": TokenEnum.PASSO,
-    "se": TokenEnum.SE,
-    "senão": TokenEnum.SENAO,
-    "inteiro": TokenEnum.TIPO,
+    'até': TokenEnum.ATE,
+    'e': TokenEnum.E,
+    'então': TokenEnum.ENTAO,
+    'escreva': TokenEnum.ESCREVA,
+    'fim_para': TokenEnum.FIMPARA,
+    'fim_se': TokenEnum.FIMSE,
+    'leia': TokenEnum.LEIA,
+    'não': TokenEnum.NAO,
+    'ou': TokenEnum.OU,
+    'para': TokenEnum.PARA,
+    'passo': TokenEnum.PASSO,
+    'se': TokenEnum.SE,
+    'senão': TokenEnum.SENAO,
+    'inteiro': TokenEnum.TIPO,
+    # Additional Tokens (not in documentation)
+    'algoritmo': TokenEnum.ALGORITMO,
+    'var': TokenEnum.VAR,
+    'inicio': TokenEnum.INICIO,
+    'fimalgoritmo': TokenEnum.FIMALGORITMO,
   }
 
   for keyword, token in keywords.items():
@@ -190,6 +214,16 @@ def match_token_constnumbers(line: str, startIndex: int, lineNumber: int) -> Opt
 
   return None  # Not a match
 
+def match_token_separators(line: str, startIndex: int, lineNumber: int) -> Optional[TokenMatch]:
+  char = line[startIndex]
+
+  if char == ':':
+    return TokenMatch(start=startIndex, end=startIndex + 1, replacement=TokenEnum.COLON.name)
+  if char == ',':
+    return TokenMatch(start=startIndex, end=startIndex + 1, replacement=TokenEnum.COMMA.name)
+
+  return None  # Not a valid standalone identifier
+
 def match_token_identifier(line: str, startIndex: int, lineNumber: int) -> Optional[TokenMatch]:
   char = line[startIndex]
   if not (char.isalpha() or char == '_'):
@@ -205,6 +239,3 @@ def match_token_identifier(line: str, startIndex: int, lineNumber: int) -> Optio
     return TokenMatch(start=startIndex, end=i, replacement=TokenEnum.ID.name)
 
   return None  # Not a valid standalone identifier
-
-if __name__ == "__main__":
-  main()
