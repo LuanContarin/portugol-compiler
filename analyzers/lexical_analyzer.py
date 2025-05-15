@@ -8,7 +8,7 @@ from utils.token_enum import TokenEnum
 
 OUTPUT_PATH_BASE = 'output/lexic_analyzer'
 
-def compile(fileName):
+def compile(fileName: str) -> List[str]:
   print('(Lexer started)')
 
   os.makedirs(OUTPUT_PATH_BASE, exist_ok=True)
@@ -31,6 +31,7 @@ def compile(fileName):
     
   print(f'Output written to {OUTPUT_PATH_BASE}')
   print('(Lexer ended)')
+  return lexeme_pairs
 
 def scan_line(line: str, lineNumber: int) -> tuple[str, List[str]]:
   token_matchers: List[Callable[[str, int], Optional[TokenMatch]]] = [
