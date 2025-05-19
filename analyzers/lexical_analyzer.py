@@ -20,7 +20,7 @@ def compile(fileName: str) -> List[str]:
   with open(f'{OUTPUT_PATH_BASE}/{tokens_file_name}', 'w', encoding='utf-8') as tokens_file:
     # Scan and write each line
     for i, line in enumerate(lines):
-      print(f'Scanning line [{i+1}]...\t{line}')
+      print(f'Scanning line [{i+1}]...\t{line.strip()}')
       (new_line, token_lexem) = scan_line(line, i+1)
       tokens_file.write(new_line + '\n')
       lexeme_pairs.extend(token_lexem)
