@@ -71,7 +71,8 @@ def scan_line(line: str, lineNumber: int) -> tuple[str, List[str]]:
         lexeme = line[match.start:match.end]
         token_lexem.append({
           "token": match.replacement,
-          "lexeme": lexeme
+          "lexeme": lexeme,
+          "code_index": f'{lineNumber}:{match.start + 1}'
         })
 
         i = match.end
@@ -80,7 +81,7 @@ def scan_line(line: str, lineNumber: int) -> tuple[str, List[str]]:
 
     if not match_found:
       # Unknown char
-      raise Exception(f'Unknown char "{new_line[i]}" at line {lineNumber}:{i}')
+      raise Exception(f'Unknown char "{line[i]}" at line {lineNumber}:{i+1}')
 
   # Collapse multiple spaces into single space and trim the line
   new_line = ' '.join(''.join(new_line_parts).split())

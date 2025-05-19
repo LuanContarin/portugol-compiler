@@ -8,8 +8,10 @@ def main():
     # Lexer
     lexeme_pairs = lexical_analyzer.compile(INPUT_FILE_NAME)
 
-    # Syntax
-    syntax_analyzer.compile(lexeme_pairs)
+    # Parser
+    parser = syntax_analyzer.Parser(lexeme_pairs)
+    parser.parse()
+    print('✅ Syntax is valid.')
 
   except Exception as e:
     print(f'[COMPILATION ERROR]:\n\t{e}')
