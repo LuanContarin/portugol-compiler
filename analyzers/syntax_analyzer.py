@@ -57,6 +57,11 @@ class Parser:
 
     self.expect_token(TokenEnum.FIMALGORITMO)
 
+    if self.pos < len(self.lexeme_pairs):
+      extra_lexeme = self.current_lexeme()
+      code_index = self.current_code_index()
+      raise SyntacticError(f'Unexpected code after "fimalgoritmo": "{extra_lexeme}" at line {code_index}')
+
   def statement(self):
     if self.check_token(TokenEnum.ID):
       self.grammar_var_assignment()
