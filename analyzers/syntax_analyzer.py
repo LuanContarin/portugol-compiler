@@ -65,6 +65,8 @@ class Parser:
       self.grammar_command_leia()
     elif self.check_token(TokenEnum.SE):
       self.grammar_command_se()
+    elif self.check_token(TokenEnum.PARA):
+      self.grammar_command_para()
     else:
       lexeme = self.current_lexeme()
       code_index = self.current_code_index()
@@ -138,6 +140,22 @@ class Parser:
         self.statement()
 
     self.expect_token(TokenEnum.FIMSE)
+
+  def grammar_command_para(self):
+    self.expect_token(TokenEnum.PARA)
+    self.expect_token(TokenEnum.ID)
+    self.expect_token(TokenEnum.ATE)
+    self.expect_token(TokenEnum.NUMINT)
+
+    # Optional "passo"
+    if self.check_token(TokenEnum.PASSO):
+      self.expect_token(TokenEnum.PASSO)
+      self.expect_token(TokenEnum.NUMINT)
+
+    while not self.check_token(TokenEnum.FIMPARA):
+      self.statement()
+
+    self.expect_token(TokenEnum.FIMPARA)
 
   #
   # Fundamental
