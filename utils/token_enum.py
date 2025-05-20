@@ -8,7 +8,7 @@ class TokenEnum(Enum):
   ESCREVA = 'escreva'
   FIMPARA = 'fim_para'
   FIMSE = 'fim_se'
-  ID = 'id'
+  ID = 'identifier'
   LEIA = 'leia'
   LOGDIFF = '<>'
   LOGIGUAL = '='
@@ -39,3 +39,4 @@ class TokenEnum(Enum):
   COLON = ':'
   INICIO = 'inicio'
   FIMALGORITMO = 'fimalgoritmo'
+  END_OF_FILE = '__EOF__'

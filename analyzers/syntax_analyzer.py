@@ -2,8 +2,6 @@ from typing import Dict, List
 
 from utils.token_enum import TokenEnum
 
-END_OF_FILE = '__EOF__'
-
 class Parser:
   def __init__(self, tokens: List[Dict[str, str]]):
     self.tokens = tokens
@@ -13,21 +11,23 @@ class Parser:
     if self.pos < len(self.tokens):
       return self.tokens[self.pos]['token']
     
-    return END_OF_FILE
+    return TokenEnum.END_OF_FILE
   
   def current_lexeme(self) -> str:
     if self.pos < len(self.tokens):
       return self.tokens[self.pos]['lexeme']
     
-    raise SystemError('invalid call for lexeme')
+    return ' '
   
   def current_code_index(self) -> str:
     if self.pos < len(self.tokens):
       return self.tokens[self.pos]['code_index']
+    elif self.tokens:
+      return self.tokens[-1]['']['code_index']
     
-    raise SystemError('invalid call for code index')
+    return 'unknown'
 
-  def match(self, expected: TokenEnum):
+  def expect_token(self, expected: TokenEnum):
     if self.current_token() == expected.name:
       self.pos += 1
       return
@@ -36,33 +36,35 @@ class Parser:
     code_index = self.current_code_index()
     raise SyntaxError(f'Expected "{expected.value}", got "{lexeme}" at line {code_index}')
   
-  def match_optional(self, expected: TokenEnum) -> bool:
+  def check_token(self, expected: TokenEnum) -> bool:
     return self.current_token() == expected.name
   
-  def match_optional_any(self, expected: List[TokenEnum]) -> bool:
+  def check_token_any(self, expected: List[TokenEnum]) -> bool:
     return any(self.current_token() == t.name for t in expected)
 
   def parse(self):
-    self.match(TokenEnum.ALGORITMO)
-    self.match(TokenEnum.STRING)
+    self.expect_token(TokenEnum.ALGORITMO)
+    self.expect_token(TokenEnum.STRING)
 
-    if self.match_optional(TokenEnum.VAR):
+    if self.check_token(TokenEnum.VAR):
       self.grammar_variable_block()
 
-    self.match(TokenEnum.INICIO)
+    self.expect_token(TokenEnum.INICIO)
 
-    while self.current_token() not in (TokenEnum.FIMALGORITMO.name, END_OF_FILE):
+    while not self.check_token_any([TokenEnum.FIMALGORITMO, TokenEnum.END_OF_FILE]):
       self.statement()
 
-    self.match(TokenEnum.FIMALGORITMO)
+    self.expect_token(TokenEnum.FIMALGORITMO)
 
   def statement(self):
-    if self.match_optional(TokenEnum.ID):
-      self.grammar_var_attribution()
-    elif self.match_optional(TokenEnum.ESCREVA):
+    if self.check_token(TokenEnum.ID):
+      self.grammar_var_assignment()
+    elif self.check_token(TokenEnum.ESCREVA):
       self.grammar_command_escreva()
-    elif self.match_optional(TokenEnum.LEIA):
+    elif self.check_token(TokenEnum.LEIA):
       self.grammar_command_leia()
+    elif self.check_token(TokenEnum.SE):
+      self.grammar_command_se()
     else:
       lexeme = self.current_lexeme()
       code_index = self.current_code_index()
@@ -72,77 +74,129 @@ class Parser:
   # Grammars
   # ----------------
   def grammar_variable_block(self):
-    self.match(TokenEnum.VAR)
+    self.expect_token(TokenEnum.VAR)
 
-    # In case there are no variables
-    while self.match_optional(TokenEnum.ID):
-      self.match(TokenEnum.ID)
+    while self.check_token(TokenEnum.ID):
+      self.expect_token(TokenEnum.ID)
 
       # Optional IDs separated by commas
-      while self.match_optional(TokenEnum.COMMA):
-        self.match(TokenEnum.COMMA)
-        self.match(TokenEnum.ID)
+      while self.check_token(TokenEnum.COMMA):
+        self.expect_token(TokenEnum.COMMA)
+        self.expect_token(TokenEnum.ID)
 
-      self.match(TokenEnum.COLON)
-      self.match(TokenEnum.TIPO)
+      self.expect_token(TokenEnum.COLON)
+      self.expect_token(TokenEnum.TIPO)
 
-  def grammar_var_attribution(self):
-    self.match(TokenEnum.ID)
-    self.match(TokenEnum.ATR)
-    self.grammar_op_expression()
+  def grammar_var_assignment(self):
+    self.expect_token(TokenEnum.ID)
+    self.expect_token(TokenEnum.ATR)
+    self.grammar_arithmetic_expression()
 
   def grammar_command_escreva(self):
-    self.match(TokenEnum.ESCREVA)
-    self.match(TokenEnum.PARAB)
+    self.expect_token(TokenEnum.ESCREVA)
+    self.expect_token(TokenEnum.PARAB)
 
     # Terms supported by escreva
-    if self.match_optional(TokenEnum.ID):
-      self.match(TokenEnum.ID)
-    elif self.match_optional(TokenEnum.NUMINT):
-      self.match(TokenEnum.NUMINT)
-    elif self.match_optional(TokenEnum.STRING):
-      self.match(TokenEnum.STRING)
+    if self.check_token(TokenEnum.ID):
+      self.expect_token(TokenEnum.ID)
+    elif self.check_token(TokenEnum.NUMINT):
+      self.expect_token(TokenEnum.NUMINT)
+    elif self.check_token(TokenEnum.STRING):
+      self.expect_token(TokenEnum.STRING)
     else:
       lexeme = self.current_lexeme()
       code_index = self.current_code_index()
       raise SyntaxError(f'Unexpected "{lexeme}" in escreva at line {code_index}')
 
-    self.match(TokenEnum.PARFE)
+    self.expect_token(TokenEnum.PARFE)
 
   def grammar_command_leia(self):
-    self.match(TokenEnum.LEIA)
-    self.match(TokenEnum.PARAB)
+    self.expect_token(TokenEnum.LEIA)
+    self.expect_token(TokenEnum.PARAB)
 
     # Terms supported by leia
-    if self.match_optional(TokenEnum.ID):
-      self.match(TokenEnum.ID)
+    if self.check_token(TokenEnum.ID):
+      self.expect_token(TokenEnum.ID)
     else:
       lexeme = self.current_lexeme()
       code_index = self.current_code_index()
       raise SyntaxError(f'Unexpected "{lexeme}" in leia at line {code_index}')
 
-    self.match(TokenEnum.PARFE)
+    self.expect_token(TokenEnum.PARFE)
+  
+  def grammar_command_se(self):
+    self.expect_token(TokenEnum.SE)
+    self.grammar_logic_expression()
+
+    self.expect_token(TokenEnum.ENTAO)
+    while not self.check_token_any([TokenEnum.SENAO, TokenEnum.FIMSE]):
+      self.statement()
+    
+    if self.check_token(TokenEnum.SENAO):
+      self.expect_token(TokenEnum.SENAO)
+      while not self.check_token(TokenEnum.FIMSE):
+        self.statement()
+
+    self.expect_token(TokenEnum.FIMSE)
 
   #
   # Fundamental
   #
-  def grammar_op_expression(self):
-    self.grammar_op_term()
+  def grammar_arithmetic_expression(self):
+    self.grammar_arithmetic_term()
     
-    while self.match_optional_any([TokenEnum.OPMAIS, TokenEnum.OPMENOS, TokenEnum.OPMULTI, TokenEnum.OPDIVI]):
+    while self.check_token_any([TokenEnum.OPMAIS, TokenEnum.OPMENOS, TokenEnum.OPMULTI, TokenEnum.OPDIVI]):
       self.pos += 1
-      self.grammar_op_term()
+      self.grammar_arithmetic_term()
 
-  def grammar_op_term(self):
-    if self.match_optional(TokenEnum.ID):
-      self.match(TokenEnum.ID)
-    elif self.match_optional(TokenEnum.NUMINT):
-      self.match(TokenEnum.NUMINT)
-    elif self.match_optional(TokenEnum.PARAB):
-      self.match(TokenEnum.PARAB)
-      self.grammar_op_expression()
-      self.match(TokenEnum.PARFE)
+  def grammar_arithmetic_term(self):
+    if self.check_token(TokenEnum.ID):
+      self.expect_token(TokenEnum.ID)
+    elif self.check_token(TokenEnum.NUMINT):
+      self.expect_token(TokenEnum.NUMINT)
+    elif self.check_token(TokenEnum.PARAB):
+      self.expect_token(TokenEnum.PARAB)
+      self.grammar_arithmetic_expression()
+      self.expect_token(TokenEnum.PARFE)
     else:
-      lexeme = self.current_lexeme()
       code_index = self.current_code_index()
       raise SyntaxError(f'Expected identifier or value in expression at line {code_index}')
+
+  def grammar_logic_expression(self):
+    self.grammar_logic_comparison()
+    while self.check_token_any([TokenEnum.E, TokenEnum.OU]):
+      self.pos += 1
+      self.grammar_logic_comparison()
+
+  def grammar_logic_comparison(self):
+    if self.check_token(TokenEnum.PARAB):
+      self.expect_token(TokenEnum.PARAB)
+      self.grammar_logic_expression()
+      self.expect_token(TokenEnum.PARFE)
+    else:
+      self.grammar_logic_operand()
+      if self.check_token_any([
+        TokenEnum.LOGIGUAL, TokenEnum.LOGDIFF,
+        TokenEnum.LOGMENOR, TokenEnum.LOGMENORIGUAL,
+        TokenEnum.LOGMAIOR, TokenEnum.LOGMAIORIGUAL
+      ]):
+        self.pos += 1
+        self.grammar_logic_operand()
+      else:
+        code_index = self.current_code_index()
+        raise SyntaxError(f'Missing comparison operator in logical expression at line {code_index}')
+
+  def grammar_logic_operand(self):
+    if self.check_token(TokenEnum.ID):
+      self.expect_token(TokenEnum.ID)
+    elif self.check_token(TokenEnum.NUMINT):
+      self.expect_token(TokenEnum.NUMINT)
+    elif self.check_token(TokenEnum.STRING):
+      self.expect_token(TokenEnum.STRING)
+    elif self.check_token(TokenEnum.PARAB):
+      self.expect_token(TokenEnum.PARAB)
+      self.grammar_logic_expression()
+      self.expect_token(TokenEnum.PARFE)
+    else:
+      code_index = self.current_code_index()
+      raise SyntaxError(f'Expected operand in logical expression at line {code_index}')

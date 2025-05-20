@@ -14,5 +14,5 @@ inicio
     escreva("Entrada negada. Menor de idade sem autorização.")
   senão
     escreva("Entrada permitida. Boa festa!")
-  fimse
+  fim_se
 fimalgoritmo
