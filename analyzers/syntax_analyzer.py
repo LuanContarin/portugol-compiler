@@ -193,7 +193,10 @@ class Parser:
       self.grammar_logic_comparison()
 
   def grammar_logic_comparison(self):
-    if self.check_token(TokenEnum.PARAB):
+    if self.check_token(TokenEnum.NAO):
+      self.expect_token(TokenEnum.NAO)
+      self.grammar_logic_comparison()
+    elif self.check_token(TokenEnum.PARAB):
       self.expect_token(TokenEnum.PARAB)
       self.grammar_logic_expression()
       self.expect_token(TokenEnum.PARFE)
