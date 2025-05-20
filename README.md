@@ -1,33 +1,69 @@
 # portugol-compiler
 
-A portugol compiler made using Python
+A simple Portugol compiler implemented in Python. This project performs lexical, syntactic, and semantic analysis on programs written in a subset of the Portugol language.
 
-# TODO:
+## Features
 
-- Criar a tabela de tokens p/ analise lexica
-  <br>
+- **Lexical Analysis:** Tokenizes Portugol source code, identifying keywords, operators, identifiers, numbers, and strings.
+- **Syntax Analysis:** Checks the structure of the code according to the language grammar.
+- **Semantic Analysis:** Validates variable declarations and usage.
 
-  ```
-    ✅ Summary of Matching Order
-    Whitespace/comments (skip)
+## Project Structure
 
-    Strings
+```
+.
+├── analyzers/
+│   ├── lexical_analyzer.py
+│   ├── semantic_analyzer.py
+│   └── syntax_analyzer.py
+├── input/
+│   ├── input.por
+│   └── input-2.por
+├── output/
+│   └── lexic_analyzer/
+├── utils/
+│   ├── file_helper.py
+│   ├── token_enum.py
+│   └── token_match.py
+├── compiler.py
+├── README.md
+└── LICENSE
+```
 
-    <- (ATR)
+## Usage
 
-    Keywords (e.g., para, escreva, fim_se)
+1. Place your Portugol source file in the `input/` directory.
+2. Set the `INPUT_FILE_NAME` variable in [`compiler.py`](compiler.py) to your input file name.
+3. Run the compiler:
 
-    Logical ops (<=, >=, <>, <, >, =)
+   ```sh
+   python compiler.py
+   ```
 
-    Math ops (+, -, *, /)
+4. Output and intermediate files will be generated in the `output/lexic_analyzer/` directory. The console output status of the compilation (success/errors)
 
-    Parentheses
+## Example
 
-    Numbers
+Sample input files:
 
-    Identifiers
+- [`input/input.por`](input/input.por)
+- [`input/input-2.por`](input/input-2.por)
 
-    Errors
-  ```
+## Token Matching Order
 
-- ...
+The lexer matches tokens in the following order:
+
+1. Whitespace/comments (skipped)
+2. Strings
+3. `<-` (ATR)
+4. Keywords (e.g., `para`, `escreva`, `fim_se`)
+5. Logical operators (`<=`, `>=`, `<>`, `<`, `>`, `=`)
+6. Math operators (`+`, `-`, `*`, `/`)
+7. Parentheses
+8. Numbers
+9. Identifiers
+10. Errors
+
+## License
+
+See [LICENSE](LICENSE).
