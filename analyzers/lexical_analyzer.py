@@ -8,6 +8,9 @@ from utils.token_enum import TokenEnum
 
 OUTPUT_PATH_BASE = 'output/lexic_analyzer'
 
+class LexicalError(Exception):
+  pass
+
 def compile(fileName: str) -> List[str]:
   print('(Lexer started)')
 
@@ -81,7 +84,7 @@ def scan_line(line: str, lineNumber: int) -> tuple[str, List[str]]:
 
     if not match_found:
       # Unknown char
-      raise Exception(f'Unknown char "{line[i]}" at line {lineNumber}:{i+1}')
+      raise LexicalError(f'Unknown char "{line[i]}" at line {lineNumber}:{i+1}')
 
   # Collapse multiple spaces into single space and trim the line
   new_line = ' '.join(''.join(new_line_parts).split())
@@ -102,7 +105,7 @@ def match_token_string(line: str, startIndex: int, lineNumber: int) -> Optional[
 
   # Couldnt find string end
   if i >= len(line):
-    raise Exception(f'Unterminated string starting at line {lineNumber}:{startIndex}')
+    raise LexicalError(f'Unterminated string starting at line {lineNumber}:{startIndex}')
 
   end_index = i + 1
   return TokenMatch(start=startIndex, end=end_index, replacement=TokenEnum.STRING.name)

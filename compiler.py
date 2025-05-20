@@ -1,5 +1,6 @@
 import analyzers.lexical_analyzer as lexical_analyzer
 import analyzers.syntax_analyzer as syntax_analyzer
+import analyzers.semantic_analyzer as semantic_analyzer
 
 INPUT_FILE_NAME = 'input-2.por'
 
@@ -12,6 +13,13 @@ def main():
     parser = syntax_analyzer.Parser(lexeme_pairs)
     parser.parse()
     print('✅ Syntax is valid.')
+
+    # Semantic Analyzer
+    semantic = semantic_analyzer.SemanticAnalyzer(lexeme_pairs)
+    semantic.validate()
+    print('✅ Semantic is valid.')
+
+    print('[COMPILED SUCCESSFULLY]')
 
   except Exception as e:
     print(f'[COMPILATION ERROR]:\n\t{e}')

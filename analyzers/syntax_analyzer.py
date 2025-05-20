@@ -2,30 +2,31 @@ from typing import Dict, List
 
 from utils.token_enum import TokenEnum
 
+class SyntacticError(Exception):
+  pass
+
 class Parser:
-  def __init__(self, tokens: List[Dict[str, str]]):
-    self.tokens = tokens
+  def __init__(self, lexemePairs: List[Dict[str, str]]):
+    self.lexeme_pairs = lexemePairs
     self.pos = 0
 
   def current_token(self) -> str:
-    if self.pos < len(self.tokens):
-      return self.tokens[self.pos]['token']
+    if self.pos < len(self.lexeme_pairs):
+      return self.lexeme_pairs[self.pos]['token']
     
     return TokenEnum.END_OF_FILE
   
   def current_lexeme(self) -> str:
-    if self.pos < len(self.tokens):
-      return self.tokens[self.pos]['lexeme']
+    if self.pos < len(self.lexeme_pairs):
+      return self.lexeme_pairs[self.pos]['lexeme']
     
     return ' '
   
   def current_code_index(self) -> str:
-    if self.pos < len(self.tokens):
-      return self.tokens[self.pos]['code_index']
-    elif self.tokens:
-      return self.tokens[-1]['']['code_index']
-    
-    return 'unknown'
+    if self.pos < len(self.lexeme_pairs):
+      return self.lexeme_pairs[self.pos]['code_index']
+
+    return self.lexeme_pairs[-1].get('code_index', 'unknown')
 
   def expect_token(self, expected: TokenEnum):
     if self.current_token() == expected.name:
@@ -34,7 +35,7 @@ class Parser:
     
     lexeme = self.current_lexeme()
     code_index = self.current_code_index()
-    raise SyntaxError(f'Expected "{expected.value}", got "{lexeme}" at line {code_index}')
+    raise SyntacticError(f'Expected "{expected.value}", got "{lexeme}" at line {code_index}')
   
   def check_token(self, expected: TokenEnum) -> bool:
     return self.current_token() == expected.name
@@ -70,7 +71,7 @@ class Parser:
     else:
       lexeme = self.current_lexeme()
       code_index = self.current_code_index()
-      raise SyntaxError(f'Unexpected "{lexeme}" at line {code_index}')
+      raise SyntacticError(f'Unexpected "{lexeme}" at line {code_index}')
 
   # ----------------
   # Grammars
@@ -108,7 +109,7 @@ class Parser:
     else:
       lexeme = self.current_lexeme()
       code_index = self.current_code_index()
-      raise SyntaxError(f'Unexpected "{lexeme}" in escreva at line {code_index}')
+      raise SyntacticError(f'Unexpected "{lexeme}" in escreva at line {code_index}')
 
     self.expect_token(TokenEnum.PARFE)
 
@@ -122,7 +123,7 @@ class Parser:
     else:
       lexeme = self.current_lexeme()
       code_index = self.current_code_index()
-      raise SyntaxError(f'Unexpected "{lexeme}" in leia at line {code_index}')
+      raise SyntacticError(f'Unexpected "{lexeme}" in leia at line {code_index}')
 
     self.expect_token(TokenEnum.PARFE)
   
@@ -178,7 +179,7 @@ class Parser:
       self.expect_token(TokenEnum.PARFE)
     else:
       code_index = self.current_code_index()
-      raise SyntaxError(f'Expected identifier or value in expression at line {code_index}')
+      raise SyntacticError(f'Expected identifier or value in expression at line {code_index}')
 
   def grammar_logic_expression(self):
     self.grammar_logic_comparison()
@@ -202,7 +203,7 @@ class Parser:
         self.grammar_logic_operand()
       else:
         code_index = self.current_code_index()
-        raise SyntaxError(f'Missing comparison operator in logical expression at line {code_index}')
+        raise SyntacticError(f'Missing comparison operator in logical expression at line {code_index}')
 
   def grammar_logic_operand(self):
     if self.check_token(TokenEnum.ID):
@@ -217,4 +218,4 @@ class Parser:
       self.expect_token(TokenEnum.PARFE)
     else:
       code_index = self.current_code_index()
-      raise SyntaxError(f'Expected operand in logical expression at line {code_index}')
+      raise SyntacticError(f'Expected operand in logical expression at line {code_index}')
