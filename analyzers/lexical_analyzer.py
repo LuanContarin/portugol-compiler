@@ -1,15 +1,19 @@
 import json
 import os
-from typing import Callable, List, Optional
+from typing import Callable, List, NamedTuple, Optional
 
 from utils.file_helper import read_lines_from_file
-from utils.token_match import TokenMatch
 from utils.token_enum import TokenEnum
 
 OUTPUT_PATH_BASE = 'output/lexic_analyzer'
 
 class LexicalError(Exception):
   pass
+
+class TokenMatch(NamedTuple):
+  start: int
+  end: int
+  replacement: str
 
 def compile(fileName: str) -> List[str]:
   print('(Lexer started)')
