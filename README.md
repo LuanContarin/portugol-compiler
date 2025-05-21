@@ -16,9 +16,7 @@ A simple Portugol compiler implemented in Python. This project performs lexical,
 │   ├── lexical_analyzer.py
 │   ├── semantic_analyzer.py
 │   └── syntax_analyzer.py
-├── input/
-│   ├── input.por
-│   └── input-2.por
+├── input/<input_files>
 ├── output/
 │   └── lexic_analyzer/
 ├── utils/
