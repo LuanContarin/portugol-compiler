@@ -14,7 +14,7 @@ class Parser:
     if self.pos < len(self.lexeme_pairs):
       return self.lexeme_pairs[self.pos]['token']
     
-    return TokenEnum.END_OF_FILE
+    return TokenEnum.END_OF_FILE.name
   
   def current_lexeme(self) -> str:
     if self.pos < len(self.lexeme_pairs):
@@ -44,26 +44,13 @@ class Parser:
     return any(self.current_token() == t.name for t in expected)
 
   def parse(self):
-    self.expect_token(TokenEnum.ALGORITMO)
-    self.expect_token(TokenEnum.STRING)
-
-    if self.check_token(TokenEnum.VAR):
-      self.grammar_variable_block()
-
-    self.expect_token(TokenEnum.INICIO)
-
-    while not self.check_token_any([TokenEnum.FIMALGORITMO, TokenEnum.END_OF_FILE]):
+    while not self.check_token(TokenEnum.END_OF_FILE):
       self.statement()
 
-    self.expect_token(TokenEnum.FIMALGORITMO)
-
-    if self.pos < len(self.lexeme_pairs):
-      extra_lexeme = self.current_lexeme()
-      code_index = self.current_code_index()
-      raise SyntacticError(f'Unexpected code after "fimalgoritmo": "{extra_lexeme}" at line {code_index}')
-
   def statement(self):
-    if self.check_token(TokenEnum.ID):
+    if self.check_token(TokenEnum.TIPO):
+      self.grammar_var_declaration()
+    elif self.check_token(TokenEnum.ID):
       self.grammar_var_assignment()
     elif self.check_token(TokenEnum.ESCREVA):
       self.grammar_command_escreva()
@@ -81,24 +68,17 @@ class Parser:
   # ----------------
   # Grammars
   # ----------------
-  def grammar_variable_block(self):
-    self.expect_token(TokenEnum.VAR)
-
-    while self.check_token(TokenEnum.ID):
-      self.expect_token(TokenEnum.ID)
-
-      # Optional IDs separated by commas
-      while self.check_token(TokenEnum.COMMA):
-        self.expect_token(TokenEnum.COMMA)
-        self.expect_token(TokenEnum.ID)
-
-      self.expect_token(TokenEnum.COLON)
-      self.expect_token(TokenEnum.TIPO)
+  def grammar_var_declaration(self):
+    self.expect_token(TokenEnum.TIPO)
+    self.expect_token(TokenEnum.COLON)
+    self.expect_token(TokenEnum.ID)
+    self.expect_token(TokenEnum.SEMICOLON)
 
   def grammar_var_assignment(self):
     self.expect_token(TokenEnum.ID)
     self.expect_token(TokenEnum.ATR)
     self.grammar_arithmetic_expression()
+    self.expect_token(TokenEnum.SEMICOLON)
 
   def grammar_command_escreva(self):
     self.expect_token(TokenEnum.ESCREVA)
@@ -117,20 +97,14 @@ class Parser:
       raise SyntacticError(f'Unexpected "{lexeme}" in escreva at line {code_index}')
 
     self.expect_token(TokenEnum.PARFE)
+    self.expect_token(TokenEnum.SEMICOLON)
 
   def grammar_command_leia(self):
     self.expect_token(TokenEnum.LEIA)
     self.expect_token(TokenEnum.PARAB)
-
-    # Terms supported by leia
-    if self.check_token(TokenEnum.ID):
-      self.expect_token(TokenEnum.ID)
-    else:
-      lexeme = self.current_lexeme()
-      code_index = self.current_code_index()
-      raise SyntacticError(f'Unexpected "{lexeme}" in leia at line {code_index}')
-
+    self.expect_token(TokenEnum.ID)
     self.expect_token(TokenEnum.PARFE)
+    self.expect_token(TokenEnum.SEMICOLON)
   
   def grammar_command_se(self):
     self.expect_token(TokenEnum.SE)
@@ -140,6 +114,7 @@ class Parser:
     while not self.check_token_any([TokenEnum.SENAO, TokenEnum.FIMSE]):
       self.statement()
     
+    # Optional "senão"
     if self.check_token(TokenEnum.SENAO):
       self.expect_token(TokenEnum.SENAO)
       while not self.check_token(TokenEnum.FIMSE):

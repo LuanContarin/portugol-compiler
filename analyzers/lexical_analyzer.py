@@ -31,6 +31,14 @@ def compile(fileName: str) -> List[str]:
       (new_line, token_lexem) = scan_line(line, i+1)
       tokens_file.write(new_line + '\n')
       lexeme_pairs.extend(token_lexem)
+    
+    # End of file
+    tokens_file.write(TokenEnum.END_OF_FILE.name)
+    lexeme_pairs.append({
+      "token": TokenEnum.END_OF_FILE.name,
+      "lexeme": '',
+      "code_index": f'{len(lines) + 1}:1'
+      })
 
   pairs_file_name = f'{fileName}_lexic-lexems.tem'
   with open(f'{OUTPUT_PATH_BASE}/{pairs_file_name}', 'w', encoding='utf-8') as lexeme_file:
