@@ -14,7 +14,7 @@ class Parser:
     if self.pos < len(self.lexeme_pairs):
       return self.lexeme_pairs[self.pos]['token']
     
-    return TokenEnum.END_OF_FILE
+    return TokenEnum.END_OF_FILE.name
   
   def current_lexeme(self) -> str:
     if self.pos < len(self.lexeme_pairs):
