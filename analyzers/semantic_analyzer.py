@@ -71,7 +71,6 @@ class SemanticAnalyzer:
       if self.check_token(TokenEnum.INICIO):
         in_code_block = True
       elif in_code_block and self.check_token(TokenEnum.ID):
-        print(self.lexeme_pairs[self.pos])
         lexeme = self.current_lexeme()
 
         # Check declaration
