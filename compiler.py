@@ -2,7 +2,7 @@ import analyzers.lexical_analyzer as lexical_analyzer
 import analyzers.syntax_analyzer as syntax_analyzer
 import analyzers.semantic_analyzer as semantic_analyzer
 
-INPUT_FILE_NAME = 'input-2.por'
+INPUT_FILE_NAME = 'TESTE_SEM_ERRO.POR'
 
 def main():
   try:

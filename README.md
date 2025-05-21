@@ -45,8 +45,8 @@ A simple Portugol compiler implemented in Python. This project performs lexical,
 
 Sample input files:
 
-- [`input/input.por`](input/input.por)
-- [`input/input-2.por`](input/input-2.por)
+- [`input/TESTE_SEM_ERRO.POR`](input/TESTE_SEM_ERRO.POR)
+- [`input/TESTE_COM_ERRO.POR`](input/TESTE_COM_ERRO.POR)
 
 ## Token Matching Order
 

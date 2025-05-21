@@ -50,6 +50,7 @@ def scan_line(line: str, lineNumber: int) -> tuple[str, List[str]]:
     match_token_parentheses,
     match_token_constnumbers,
     match_token_separators,
+    match_token_endline,
     match_token_identifier,
     # ...
   ]
@@ -135,11 +136,6 @@ def match_token_keywords(line: str, startIndex: int, lineNumber: int) -> Optiona
     'se': TokenEnum.SE,
     'senão': TokenEnum.SENAO,
     'inteiro': TokenEnum.TIPO,
-    # Additional Tokens (not in documentation)
-    'algoritmo': TokenEnum.ALGORITMO,
-    'var': TokenEnum.VAR,
-    'inicio': TokenEnum.INICIO,
-    'fimalgoritmo': TokenEnum.FIMALGORITMO,
   }
 
   for keyword, token in keywords.items():
@@ -228,8 +224,14 @@ def match_token_separators(line: str, startIndex: int, lineNumber: int) -> Optio
 
   if char == ':':
     return TokenMatch(start=startIndex, end=startIndex + 1, replacement=TokenEnum.COLON.name)
-  if char == ',':
-    return TokenMatch(start=startIndex, end=startIndex + 1, replacement=TokenEnum.COMMA.name)
+
+  return None  # Not a valid standalone identifier
+
+def match_token_endline(line: str, startIndex: int, lineNumber: int) -> Optional[TokenMatch]:
+  char = line[startIndex]
+
+  if char == ';':
+    return TokenMatch(start=startIndex, end=startIndex + 1, replacement=TokenEnum.SEMICOLON.name)
 
   return None  # Not a valid standalone identifier
 

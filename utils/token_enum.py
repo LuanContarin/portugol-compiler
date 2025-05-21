@@ -33,10 +33,6 @@ class TokenEnum(Enum):
   TIPO = 'inteiro'
 
   # Additional Tokens (not in documentation)
-  ALGORITMO = 'algoritmo'
-  VAR = 'var'
-  COMMA = ','
   COLON = ':'
-  INICIO = 'inicio'
-  FIMALGORITMO = 'fimalgoritmo'
+  SEMICOLON = ';'
   END_OF_FILE = '__EOF__'
