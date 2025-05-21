@@ -23,8 +23,7 @@ A simple Portugol compiler implemented in Python. This project performs lexical,
 │   └── lexic_analyzer/
 ├── utils/
 │   ├── file_helper.py
-│   ├── token_enum.py
-│   └── token_match.py
+│   └── token_enum.py
 ├── compiler.py
 ├── README.md
 └── LICENSE
